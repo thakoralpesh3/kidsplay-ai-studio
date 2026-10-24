@@ -21,7 +21,7 @@ Powered by Google's frontier reasoning engine **Gemini 4 Argon** (`gemini-4-argo
 - ⚡ **Zero-Latency Instant Synthesizer (<15ms)** ensuring games run smoothly even during network outages or API limits
 - 📱 **24/7 Mobile Cloud Access & Dual-Agent Gateway** (accessible from any phone or tablet like Project Chhaya)
 - 🛡️ **Multi-Layer Cybersecurity Shield** preventing prompt injection, script injection, and DDoS
-- ☁️ **Antigravity to GitHub Automatic Synchronization Engine**
+- ☁️ **Antigravity to GitHub Automatic Synchronization Engine** ([`scripts/github_sync.py`](scripts/github_sync.py))
 
 ---
 
