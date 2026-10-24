@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: kidsplay-ai-studio
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-4-argon
+      - key: DEFAULT_LANGUAGE
+        value: gu-IN
+      - key: DATA_DIR
+        value: /tmp/data

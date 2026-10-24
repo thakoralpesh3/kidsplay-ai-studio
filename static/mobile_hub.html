@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📱 Alpesh Sir • Dual Agent Mobile Access Hub</title>
+    <style>
+        :root {
+            --bg: #0b0c16;
+            --card-bg: rgba(22, 24, 48, 0.9);
+            --neon-blue: #00f0ff;
+            --neon-pink: #ff007a;
+            --neon-gold: #ffe600;
+            --text: #ffffff;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body {
+            background: radial-gradient(circle at top, #181b38 0%, var(--bg) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            font-size: 26px;
+            background: linear-gradient(90deg, var(--neon-pink), var(--neon-blue), var(--neon-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        .header p {
+            font-size: 14px;
+            color: #a0a5cc;
+        }
+        .badge-live {
+            display: inline-block;
+            background: rgba(0, 230, 118, 0.2);
+            color: #00e676;
+            border: 1px solid #00e676;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+        .agents-grid {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .agent-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+        .agent-card.chamunda {
+            border-color: rgba(255, 230, 0, 0.4);
+        }
+        .agent-card.kidsplay {
+            border-color: rgba(255, 0, 122, 0.4);
+        }
+        .agent-card:hover {
+            transform: translateY(-4px);
+        }
+        .agent-icon {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+        .agent-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+        .agent-card.chamunda .agent-title { color: var(--neon-gold); }
+        .agent-card.kidsplay .agent-title { color: var(--neon-blue); }
+        .agent-desc {
+            font-size: 13px;
+            color: #c0c5ea;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+        .btn-launch {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 800;
+            text-decoration: none;
+            color: #0b0c16;
+            transition: all 0.2s ease;
+        }
+        .btn-chamunda {
+            background: linear-gradient(135deg, #ffe600, #ff9900);
+            box-shadow: 0 4px 15px rgba(255, 230, 0, 0.4);
+        }
+        .btn-kidsplay {
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-blue));
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(255, 0, 122, 0.4);
+        }
+        .btn-launch:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+        .qr-section {
+            margin-top: 16px;
+            background: #ffffff;
+            padding: 8px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        .qr-section img {
+            width: 140px;
+            height: 140px;
+            display: block;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #6d729c;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📱 Alpesh Sir • Dual Agent Mobile Hub</h1>
+        <p>Project Chhaya (પ્રોજેક્ટ છાયા) & KidsPlay AI Studio 24/7 Mobile Gateway</p>
+        <span class="badge-live">⚡ Cloudflare 24/7 Public Tunnels Active</span>
+    </div>
+
+    <div class="agents-grid">
+        <!-- Agent 1: Chamunda Automobile Enterprise (Project Chhaya) -->
+        <div class="agent-card chamunda">
+            <div class="agent-icon">🏍️</div>
+            <div class="agent-title">Agent 1: Chamunda Enterprise (Chhaya)</div>
+            <p class="agent-desc">Royal Enfield Workshop OS, Sub-Agents, Voice Diagnostic Copilot, Job Card Mutator & 24/7 Cloud Shadow Mirror</p>
+            <a href="https://night-muze-itunes-consequences.trycloudflare.com" target="_blank" class="btn-launch btn-chamunda">
+                🚀 Open Chamunda Mobile Agent
+            </a>
+            <p class="small text-muted" style="margin-top:8px;font-size:11px;color:#8f95c0;word-break:break-all;">https://night-muze-itunes-consequences.trycloudflare.com</p>
+        </div>
+
+        <!-- Agent 2: KidsPlay AI Studio (Sparky) -->
+        <div class="agent-card kidsplay">
+            <div class="agent-icon">🎮</div>
+            <div class="agent-title">Agent 2: KidsPlay AI Studio (Sparky)</div>
+            <p class="agent-desc">Autonomous Kids Game Creator, Gujarati Voice Assistant, Guided Brainstorming, Self-Evolution & Surprise Idea Engine</p>
+            <a href="https://recorders-trim-challenge-faculty.trycloudflare.com" target="_blank" class="btn-launch btn-kidsplay">
+                🚀 Open KidsPlay Studio on Mobile
+            </a>
+            <p class="small text-muted" style="margin-top:8px;font-size:11px;color:#8f95c0;word-break:break-all;">https://recorders-trim-challenge-faculty.trycloudflare.com</p>
+            
+            <div class="qr-section">
+                <img src="/static/kidsplay_mobile_qr.png" alt="Scan to open KidsPlay Studio" onerror="this.style.display='none'">
+            </div>
+            <span style="font-size:11px;color:#a0a5cc;margin-top:6px;">Scan with Phone Camera to Open Instantly!</span>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>24/7 Autonomous Self-Supervised by Chhaya & KidsPlay Watchdog</p>
+        <p>© Alpesh Sir • Chamunda Automobiles & KidsPlay AI Studio</p>
+    </div>
+</body>
+</html>

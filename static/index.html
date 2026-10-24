@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎮 KidsPlay AI Studio - Interactive Voice Assistant & Kids Game Maker</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@700;900&family=Noto+Sans+Gujarati:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Network Resilience Notification Banner -->
+  <div id="resilience-banner" class="resilience-toast hidden">
+    <div class="toast-icon" id="toast-icon">🐻</div>
+    <div class="toast-content">
+      <h4 id="toast-title">નેટવર્ક સૂચના (Network Status)</h4>
+      <p id="toast-message">કનેક્શન ચકાસી રહ્યું છે...</p>
+    </div>
+    <div class="toast-spinner hidden" id="toast-spinner"></div>
+  </div>
+
+  <!-- Main App Shell -->
+  <div class="app-container">
+    
+    <!-- Top Header Bar -->
+    <header class="app-header">
+      <div class="brand-group">
+        <div class="app-logo">
+          <img src="/assets/icon.svg" alt="KidsPlay Mascot">
+        </div>
+        <div class="title-group">
+          <h1>KidsPlay AI Studio (કિડ્સ ગેમ સ્ટુડિયો)</h1>
+          <span class="badge-gemini badge-gemini-argon" id="badge-gemini-model">⚡ Powered by Gemini 4 Argon</span>
+        </div>
+      </div>
+
+      <!-- Header Controls: Language Picker, Network Status, Memory & Skills -->
+      <div class="header-actions">
+        <!-- Language Selector (Gujarati by default) -->
+        <div class="lang-selector-card">
+          <label for="language-select">🌍 ભાષા / Language:</label>
+          <select id="language-select" class="styled-select">
+            <option value="gu-IN" selected>🇮🇳 ગુજરાતી (Gujarati)</option>
+            <option value="hi-IN">🇮🇳 हिन्दी (Hindi)</option>
+            <option value="en-US">🇺🇸 English (US)</option>
+            <option value="en-GB">🇬🇧 English (UK)</option>
+            <option value="es-ES">🇪🇸 Español (Spanish)</option>
+            <option value="fr-FR">🇫🇷 Français (French)</option>
+            <option value="de-DE">🇩🇪 Deutsch (German)</option>
+            <option value="ja-JP">🇯🇵 日本語 (Japanese)</option>
+            <option value="zh-CN">🇨🇳 中文 (Mandarin)</option>
+            <option value="pt-BR">🇧🇷 Português (Brazil)</option>
+            <option value="ar-SA">🇸🇦 العربية (Arabic)</option>
+          </select>
+        </div>
+
+        <!-- Network Status Indicator -->
+        <div class="network-badge online" id="network-badge">
+          <span class="dot"></span>
+          <span id="network-status-text">ઓનલાઇન (Online)</span>
+        </div>
+
+        <!-- AI Security Shield Status Indicator -->
+        <div class="security-badge armed" id="security-badge" title="AI Security Firewall & Anti-Hacking Guard: Armed & Active">
+          <span class="shield-icon">🛡️</span>
+          <span id="security-status-text">સુરક્ષા કવચ સક્રિય (Protected)</span>
+        </div>
+
+        <!-- Self-Evolution & Auto-Solution Matrix Modal Trigger -->
+        <button id="btn-skills-matrix" class="btn-icon" title="View AI Skills & Self-Evolution Memory">
+          🧠 સેલ્ફ-ગ્રોથ <span class="skills-counter" id="skills-badge-count">6</span>
+        </button>
+
+        <!-- Mobile Access & Both Agents Hub Trigger -->
+        <button id="btn-mobile-access" class="btn-icon btn-mobile-trigger" title="Mobile QR Code & Both Agents Hub">
+          📱 મોબાઈલ એક્સેસ
+        </button>
+
+        <!-- GitHub Repository & 1-Click Cloud Launch -->
+        <a id="btn-github-repo" href="https://github.com/thakoralpesh3/kidsplay-ai-studio" target="_blank" class="btn-icon btn-github-trigger" title="Open GitHub Repository & 1-Click Codespaces" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+          ☁️ GitHub
+        </a>
+      </div>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <main class="studio-layout">
+      
+      <!-- Left Column: Voice Assistant & Interactive Copilot Panel -->
+      <section class="assistant-panel">
+        
+        <!-- Mascot Interactive Card with Live Dialogue -->
+        <div class="mascot-card">
+          <div class="mascot-visual" id="mascot-avatar">
+            <div class="mascot-face normal" id="mascot-face">
+              <div class="mascot-eyes">
+                <div class="eye left"><div class="pupil"></div></div>
+                <div class="eye right"><div class="pupil"></div></div>
+              </div>
+              <div class="mascot-mouth" id="mascot-mouth"></div>
+            </div>
+            <div class="sparkles-halo">✨</div>
+          </div>
+          
+          <div class="speech-bubble" id="speech-bubble">
+            <div class="bubble-top-bar">
+              <span class="mascot-name-tag">🐉 સ્પાર્કી (Sparky AI Copilot)</span>
+              <button id="btn-replay-speech" class="btn-replay-speech" title="અવાજ સાંભળો (Hear Voice)">🔊 સાંભળો</button>
+            </div>
+            <p id="assistant-speech-text">"નમસ્તે દોસ્ત! હું <strong>સ્પાર્કી</strong> છું! આજે તમારે કેવી ગેમ બનાવવી છે? શું આપણે યુનિકોર્ન વાળી રમત બનાવીએ, સ્પેસ રોકેટ વાળી કે કાર રેસિંગ?" 🎮✨</p>
+            
+            <!-- Interactive Follow-up Question Prompt & Choice Tray -->
+            <div class="interactive-choices-tray" id="interactive-choices-tray">
+              <button class="choice-chip" data-choice="એક સુંદર યુનિકોર્ન વાળી રમત બનાવો જે આકાશમાં ઉડીને ડોનટ્સ પકડે">🦄 યુનિકોર્ન ડોનટ્સ ગેમ</button>
+              <button class="choice-chip" data-choice="અંતરિક્ષમાં રોકેટ ઉડાડીને ઉલ્કાઓથી બચવાની ગેમ બનાવો">🚀 સ્પેસ રોકેટ ગેમ</button>
+              <button class="choice-chip" data-choice="એક સુપર ફાસ્ટ કાર રેસિંગ ગેમ બનાવો">🏎️ ટર્બો કાર રેસિંગ</button>
+              <button class="choice-chip" data-choice="મને એક મસ્ત નવી ગેમનો આઈડિયા આપો!">💡 મને નવો આઈડિયા આપો</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Big Voice Mic & Text Input Area -->
+        <div class="prompt-input-card">
+          <div class="voice-hero-box">
+            <button id="btn-voice-mic" class="btn-voice-mic" title="બોલવા અને વાતચીત કરવા માટે ક્લિક કરો">
+              <div class="mic-glow"></div>
+              <span class="mic-icon">🎙️</span>
+              <span class="mic-label" id="mic-label">બોલવા માટે ટેપ કરો (Tap to Talk & Ask Ideas)</span>
+            </button>
+            
+            <!-- Interactive Action Shortcuts below Mic -->
+            <div class="voice-quick-actions">
+              <button id="btn-surprise-me" class="btn-voice-surprise">🎁 મને સરપ્રાઇઝ આપો! (Surprise Me!)</button>
+              <button id="btn-ask-idea" class="btn-voice-subaction">💡 નવો આઈડિયા પૂછો</button>
+              <button id="btn-how-to-play" class="btn-voice-subaction">❓ કેવી રીતે રમવું?</button>
+            </div>
+
+            <!-- Live Audio VU Meter Bars -->
+            <div class="voice-wave-bars hidden" id="voice-wave-bars">
+              <span id="bar-1"></span>
+              <span id="bar-2"></span>
+              <span id="bar-3"></span>
+              <span id="bar-4"></span>
+              <span id="bar-5"></span>
+            </div>
+          </div>
+
+          <div class="text-input-group">
+            <input type="text" id="prompt-input" placeholder="દા.ત. 'યુનિકોર્ન અને કેન્ડી વાળી મસ્ત ગેમ બનાવો'..." autocomplete="off">
+            <button id="btn-send-prompt" class="btn-primary">
+              <span>🚀 મોકલો / બનાવો!</span>
+            </button>
+          </div>
+
+          <!-- Quick Starter Tags for Kids -->
+          <div class="quick-tags-container">
+            <span class="tag-title">🌈 નવી ગેમના આઇડિયા (Starter Games):</span>
+            <div class="tags-grid">
+              <button class="chip-tag chip-advanced" data-prompt="એક એડવાન્સ્ડ સ્પેસ શૂટર બનાવો જેમાં એલિયન મોથરશિપ બોસ ફાઇટ આવે અને ડબલ લેઝર પાવરઅપ્સ મળે">👾 સ્પેસ બોસ ફાઇટ (Boss Titan)</button>
+              <button class="chip-tag chip-advanced" data-prompt="એક સુપરફાસ્ટ નાઇટ્રો કાર રેસિંગ ગેમ જેમાં રાઇવલ બોસ રેસર અને સ્પીડ બૂસ્ટ્સ હોય">🏎️ નાઇટ્રો બોસ રેસિંગ</button>
+              <button class="chip-tag chip-advanced" data-prompt="મેગા કેન્ડી કાર્નિવલ ગેમ જેમાં મેગ્નેટ પાવરઅપ અને ગોલ્ડન કપકેક આવે">🧁 મેગા કેન્ડી કાર્નિવલ</button>
+              <button class="chip-tag" data-prompt="અંતરિક્ષમાં રોકેટ ઉડાડીને લેઝરથી ઉલ્કાઓ તોડવાની સ્પેસ શૂટર ગેમ બનાવો">🚀 સ્પેસ શૂટર</button>
+              <button class="chip-tag" data-prompt="એક હાઇ-સ્પીડ ટર્બો કાર રેસિંગ ગેમ બનાવો જેમાં નાઇટ્રો બૂસ્ટર હોય">🏎️ ટર્બો કાર રેસિંગ</button>
+              <button class="chip-tag" data-prompt="આકાશમાંથી પડતી કેન્ડી, ડોનટ્સ અને તારા પકડવાની કેચર ગેમ બનાવો">🍩 કેન્ડી કેચર</button>
+              <button class="chip-tag" data-prompt="એક જાદુઈ મેઇઝ ભૂલભુલામણી ગેમ બનાવો જેમાં ૩ ચાવીઓ શોધીને દરવાજો ખોલવાનો હોય">🏰 મેઇઝ એડવેન્ચર</button>
+              <button class="chip-tag" data-prompt="ટેપ કરીને રંગબેરંગી પરપોટા ફોડવાની ફન બબલ પોપર ગેમ બનાવો">🫧 બબલ પોપર</button>
+              <button class="chip-tag" data-prompt="એક સુંદર યુનિકોર્ન વાળી રમત બનાવો જે આકાશમાં કૂદીને તારા ભેગા કરે">🦄 યુનિકોર્ન કૂદકો</button>
+              <button class="chip-tag" data-prompt="એક ભૂખ્યા દેડકાની રમત બનાવો જે કમળ પરથી કૂદીને સોનેરી માખીઓ પકડે">🐸 દેડકાની ગેમ</button>
+              <button class="chip-tag" data-prompt="એક ક્યૂટ ડાયનાસોરની રમત બનાવો">🦖 ડાયનાસોર ગેમ</button>
+            </div>
+          </div>
+
+          <!-- Live Modification Quick Buttons for Kids -->
+          <div class="modify-tags-container">
+            <span class="tag-title">🪄 ગેમમાં ફેરફાર કરો (Live Kids Tweaks):</span>
+            <div class="tags-grid">
+              <button class="chip-modify" data-mod="પ્લેયરને બહુ જ ઊંચો કૂદકો લગાવવા દો અને પાછળ મેઘધનુષની પૂંછડી ઉમેરો">🦘 સુપર હાઇ જમ્પ</button>
+              <button class="chip-modify" data-mod="એક સુપર સ્પીડ રોકેટ બૂસ્ટર અને કલરફુલ લેઝર ઉમેરો">⚡ ટર્બો રોકેટ બૂસ્ટર</button>
+              <button class="chip-modify" data-mod="બેકગ્રાઉન્ડને ચમકતા તારાઓ વાળા અંતરિક્ષ જેવું બનાવી દો">🌌 સ્પેસ ગેલેક્સી</button>
+              <button class="chip-modify" data-mod="સોનેરી તારાઓ અને 500 પોઈન્ટ વાળા કપકેક ઉમેરો">🧁 બોનસ કપકેક</button>
+              <button class="chip-modify" data-mod="ગેમને થોડી સરળ બનાવો અને પ્લેયરને સુરક્ષા માટે જાદુઈ બબલ શિલ્ડ આપો">🛡️ જાદુઈ શિલ્ડ</button>
+              <button class="chip-modify" data-mod="પ્લેયરને કૂલ ચશ્મા પહેરેલો ગોલ્ડન ડ્રેગન બનાવી દો">🐉 ગોલ્ડન ડ્રેગન</button>
+            </div>
+          </div>
+
+          <!-- Autonomous Self-Solution Button -->
+          <div class="self-solution-container">
+            <button id="btn-self-evolve-game" class="btn-self-evolve">
+              <span>🧠 સ્પાર્કી, જાતે નવો આઇડિયા શોધીને ગેમને અપગ્રેડ કરો! (Self-Grow & Solve)</span>
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- Right Column: Live Playable Game Canvas Screen -->
+      <section class="game-stage-panel">
+        
+        <div class="game-card">
+          <!-- Game Bar -->
+          <div class="game-header-bar">
+            <div class="game-meta">
+              <span class="game-icon" id="game-badge-icon">🦄</span>
+              <h2 id="current-game-title">જાદુઈ યુનિકોર્ન એડવેન્ચર</h2>
+            </div>
+
+            <div class="game-actions">
+              <button id="btn-restart-game" class="btn-game-tool" title="ફરી શરૂ કરો">🔄 Restart</button>
+              <button id="btn-mute-audio" class="btn-game-tool" title="અવાજ ચાલુ/બંધ">🔊 Audio</button>
+              <button id="btn-fullscreen" class="btn-game-tool" title="મોટી સ્ક્રીન">⛶ Fullscreen</button>
+            </div>
+          </div>
+
+          <!-- The Game Canvas Container -->
+          <div class="canvas-wrapper" id="canvas-wrapper">
+            <canvas id="game-canvas" width="800" height="500"></canvas>
+            
+            <!-- In-game Dynamic HTML HUD Overlay (lives, score, combo streak, powerups, boss bar) -->
+            <div class="game-hud-overlay" id="game-hud-overlay">
+              <div class="hud-chip hud-lives-chip">
+                <span class="hud-emoji">💖</span>
+                <span class="hud-val" id="hud-lives">3</span>
+              </div>
+              <div class="hud-chip hud-score-chip">
+                <span class="hud-emoji">⭐</span>
+                <span class="hud-val" id="hud-score">0</span>
+              </div>
+              <div class="hud-chip hud-combo-chip">
+                <span class="hud-emoji">⚡</span>
+                <span class="hud-val" id="hud-combo">x1</span>
+              </div>
+              <div class="hud-chip hud-powerup-chip" id="hud-powerup-chip" style="display:none;">
+                <span class="hud-emoji" id="hud-powerup-emoji">🛡️</span>
+                <span class="hud-val" id="hud-powerup-timer">SHIELD</span>
+              </div>
+              <div class="hud-boss-chip" id="hud-boss-chip" style="display:none;">
+                <span class="hud-boss-title" id="hud-boss-title">👾 BOSS TITAN</span>
+                <div class="hud-boss-bar">
+                  <div class="hud-boss-fill" id="hud-boss-fill" style="width:100%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- In-game Kid Overlay Controls (for touch/mouse play) -->
+            <div class="game-touch-overlay">
+              <div class="dpad-touch">
+                <button class="touch-btn" id="btn-touch-left" title="ડાબે">◀</button>
+                <div class="dpad-vertical-stack">
+                  <button class="touch-btn" id="btn-touch-up" title="ઉપર">▲</button>
+                  <button class="touch-btn" id="btn-touch-down" title="નીચે">▼</button>
+                </div>
+                <button class="touch-btn" id="btn-touch-right" title="જમણે">▶</button>
+              </div>
+              <div class="action-touch">
+                <button class="touch-btn btn-jump" id="btn-touch-jump">કૂદો 🦘</button>
+                <button class="touch-btn btn-action" id="btn-touch-action">જાદુ ✨</button>
+              </div>
+            </div>
+
+            <!-- Loading Spinner & AI Generation Overlay -->
+            <div class="generation-overlay hidden" id="generation-overlay">
+              <div class="gen-card">
+                <div class="gen-magic-wand">🪄</div>
+                <h3 id="gen-status-title">સ્પાર્કી જાદુઈ ગેમ બનાવી રહ્યો છે...</h3>
+                <p id="gen-status-desc">Gemini AI દ્વારા તમારી મનપસંદ ગેમ તૈયાર થઈ રહી છે!</p>
+                <div class="rainbow-progress-bar">
+                  <div class="rainbow-fill"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Self-Healing Notification Toast Overlay -->
+            <div class="healing-toast hidden" id="healing-toast">
+              <span>🛡️ સેલ્ફ-હીલિંગ AI: રમતની નાની ખામી આપોઆપ સુધારી લીધી છે! હોટ-રીલોડિંગ...</span>
+            </div>
+
+            <!-- Autonomous Surprise Idea Showcase Overlay / Banner -->
+            <div class="surprise-banner hidden" id="surprise-banner">
+              <div class="surprise-card">
+                <div class="surprise-top">
+                  <div class="surprise-badge-tag" id="surprise-badge">🎁 Sparky Surprise!</div>
+                  <button class="btn-close-surprise" id="btn-close-surprise">&times;</button>
+                </div>
+                <h3 id="surprise-title">સ્પાર્કીનો જાદુઈ સરપ્રાઇઝ આઈડિયા! ✨</h3>
+                <p id="surprise-desc">દોસ્ત, મારી પાસે એક જબરદસ્ત સરપ્રાઇઝ આઈડિયા છે!</p>
+                <div class="surprise-actions">
+                  <button class="btn-apply-surprise" id="btn-apply-surprise">🪄 હા, આ સરપ્રાઇઝ લાગુ કરો!</button>
+                  <button class="btn-reroll-surprise" id="btn-reroll-surprise">🎲 બીજો નવો આઈડિયા આપો</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Instructions and Game Details Footer -->
+          <div class="game-footer-bar">
+            <div class="instructions-box">
+              <span class="inst-icon">💡 કેવી રીતે રમવું:</span>
+              <span id="game-instructions-text">ખસવા માટે એરો કી (◀ ▶) વાપરો, કૂદવા માટે સ્પેસબાર દબાવો! વસ્તુઓ ભેગી કરો અને મજા માણો!</span>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Self-Evolution & Memory Modal -->
+    <div class="modal-backdrop hidden" id="skills-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>🧠 સેલ્ફ-ગ્રોથ & સોલ્યુશન મેટ્રિક્સ (Self-Evolution & Solutions)</h2>
+          <button class="btn-close-modal" id="btn-close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="evolution-rank-banner">
+            <span class="rank-icon">🌟</span>
+            <div class="rank-info">
+              <h4 id="stat-evolution-title">🌱 Novice AI Game Alchemist</h4>
+              <p>સ્પાર્કી દરેક નવી રમત, સરપ્રાઇઝ અને સેલ્ફ-હીલિંગ સાથે જાતે ગ્રોથ કરે છે અને લેવલ-અપ થાય છે!</p>
+            </div>
+          </div>
+          
+          <div class="memory-stats-grid">
+            <div class="stat-card">
+              <span class="stat-num" id="stat-games-created">0</span>
+              <span class="stat-lbl">બનાવેલી રમતો</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num" id="stat-modifications">0</span>
+              <span class="stat-lbl">લાઈવ ફેરફારો</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num" id="stat-self-healed">0</span>
+              <span class="stat-lbl">જાતે સુધારેલા બગ્સ</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num" id="stat-skills-learned">6</span>
+              <span class="stat-lbl">શીખેલી AI સ્કિલ્સ</span>
+            </div>
+          </div>
+
+          <h3 class="section-title">✨ રજિસ્ટર થયેલી AI સ્કિલ્સ (Registered Skills)</h3>
+          <div class="skills-list" id="skills-list-container">
+            <!-- Dynamically populated -->
+          </div>
+
+          <h3 class="section-title">📜 શીખેલા પાઠ અને મેમરી (Lessons Learned)</h3>
+          <ul class="lessons-list" id="lessons-list-container">
+            <!-- Dynamically populated -->
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Access & Both Agents Hub Modal -->
+    <div class="modal-backdrop hidden" id="mobile-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>📱 બંને એજન્ટ્સ મોબાઈલ એક્સેસ (Dual Agent Mobile Access)</h2>
+          <button class="btn-close-modal" id="btn-close-mobile-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-intro">પ્રોજેક્ટ છાયા (Project Chhaya) ની જેમ 24/7 Cloudflare Secure Tunnel દ્વારા તમારા સ્માર્ટફોન કે ટેબ્લેટથી બંને એજન્ટ્સ ચલાવો:</p>
+          
+          <div class="mobile-agents-grid">
+            <div class="mobile-agent-card">
+              <div class="agent-tag" style="background:#ff007a;">🎮 Agent 2: KidsPlay Studio</div>
+              <h3 style="margin:8px 0;font-size:16px;">KidsPlay AI Studio & Sparky</h3>
+              <div class="qr-container" style="background:#fff;padding:8px;border-radius:12px;display:inline-block;margin:6px 0;">
+                <img id="kidsplay-qr-img" src="/kidsplay_mobile_qr.png" alt="KidsPlay QR" style="width:140px;height:140px;display:block;" onerror="this.style.display='none'">
+              </div>
+              <p class="mobile-url" id="kidsplay-mobile-url-text" style="font-size:11px;color:#00f0ff;word-break:break-all;margin-top:6px;">તપાસી રહ્યું છે...</p>
+              <a id="btn-open-kidsplay-mobile" href="#" target="_blank" class="btn-primary" style="margin-top:10px;text-decoration:none;display:inline-block;padding:8px 16px;font-size:12px;">🚀 મોબાઈલમાં ખોલો</a>
+            </div>
+
+            <div class="mobile-agent-card chamunda-card">
+              <div class="agent-tag" style="background:#ff9900;">🏍️ Agent 1: Chamunda (Chhaya)</div>
+              <h3 style="margin:8px 0;font-size:16px;">Chamunda RE Enterprise</h3>
+              <p style="font-size:12px;color:#c0c5ea;margin:8px 0;">વર્કશોપ OS, સબ-એજન્ટ્સ, વૉઇસ ડાયગ્નોસ્ટિક્સ & 24/7 શેડો મિરર</p>
+              <p class="mobile-url" id="chamunda-mobile-url-text" style="font-size:11px;color:#ffe600;word-break:break-all;margin-top:6px;">https://flu-francisco-bug-okay.trycloudflare.com</p>
+              <a id="btn-open-chamunda-mobile" href="https://flu-francisco-bug-okay.trycloudflare.com" target="_blank" class="btn-primary" style="background:linear-gradient(135deg,#ffe600,#ff9900);color:#0b0c16;margin-top:10px;text-decoration:none;display:inline-block;padding:8px 16px;font-size:12px;">🚀 ચામુંડા એજન્ટ ખોલો</a>
+            </div>
+          </div>
+
+          <div style="text-align:center;margin-top:16px;">
+            <a href="/mobile-hub" target="_blank" class="choice-chip" style="display:inline-block;font-size:13px;padding:8px 16px;">🌐 બંને એજન્ટ્સનું સંયુક્ત મોબાઈલ પોર્ટલ ખોલો (Dual Agent Hub)</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/game_engine.js"></script>
+  <script src="/js/voice_assistant.js"></script>
+  <script src="/js/self_healing.js"></script>
+  <script src="/js/resilience.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

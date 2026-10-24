@@ -1,0 +1,24 @@
+{
+  "name": "KidsPlay AI Studio (Gemini 4 Argon)",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {}
+  },
+  "forwardPorts": [8899],
+  "portsAttributes": {
+    "8899": {
+      "label": "KidsPlay AI Studio Web App",
+      "onAutoForward": "openBrowserOnce"
+    }
+  },
+  "postCreateCommand": "pip install --user -r requirements.txt && cp -n .env.example .env || true",
+  "postStartCommand": "nohup python3 -m uvicorn server.main:app --host 0.0.0.0 --port 8899 > server.log 2>&1 &",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ]
+    }
+  }
+}

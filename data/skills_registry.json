@@ -1,0 +1,86 @@
+{
+  "particle_rainbow_explosion": {
+    "name": "Rainbow Star Particles",
+    "description": "Spawns bursting colorful stars upon coin pickup or jump",
+    "code_snippet": "spawnParticles(x, y, ['#ff4d4d','#ffb84d','#ffff4d','#4dff4d','#4da6ff','#b84dff'], 12);"
+  },
+  "floating_score_popup": {
+    "name": "Floating Score Text",
+    "description": "Animates score popup floating up and fading",
+    "code_snippet": "spawnScorePopup(x, y, '+100');"
+  },
+  "screen_shake_effect": {
+    "name": "Screen Shake on Impact",
+    "description": "Adds juice and camera shake when player hits obstacle or booster",
+    "code_snippet": "triggerScreenShake(8, 200);"
+  },
+  "sound_synth_synthesizer": {
+    "name": "Retro 8-bit Audio Synthesizer",
+    "description": "Synthesizes tones for jump, coin, powerup, win without external audio files",
+    "code_snippet": "playSound('coin'); playSound('jump'); playSound('powerup');"
+  },
+  "turbo_boost_mechanic": {
+    "name": "Turbo Rocket Boost",
+    "description": "Doubles speed and draws rainbow exhaust trail",
+    "code_snippet": "player.turboTimer = 180; player.speedMultiplier = 2.0;"
+  },
+  "kid_invincibility_shield": {
+    "name": "Magical Bubble Shield",
+    "description": "Protects kid from 1 hit with a glowing rainbow orb",
+    "code_snippet": "player.hasShield = true; drawGlowingBubble(player.x, player.y);"
+  },
+  "turbo_star_catcher": {
+    "name": "Rainbow Star Rocket Boost",
+    "description": "Combines turbo rocket speed with star particle trails and protective bubble shield mechanics!",
+    "code_snippet": "",
+    "learned_at": 1788111001.1000016
+  },
+  "magical_bubble_shield": {
+    "name": "Magical Bubble Shield",
+    "description": "Protects Sparky from one enemy strike with a bright rainbow force field!",
+    "code_snippet": "",
+    "learned_at": 1788111028.4848378
+  },
+  "anti_gravity_portal": {
+    "name": "Zero Gravity Ceiling Walk",
+    "description": "Allows inverting gravity so player walks on ceiling",
+    "code_snippet": "",
+    "learned_at": 1788701544.291475
+  },
+  "laser_asteroid_blaster": {
+    "name": "\u0ab2\u0ac7\u0a9d\u0ab0 \u0a8f\u0ab8\u0acd\u0a9f\u0ab0\u0acb\u0a87\u0aa1 \u0aac\u0acd\u0ab2\u0abe\u0ab8\u0acd\u0a9f\u0ab0 (Laser Asteroid Blaster)",
+    "description": "\u0ab2\u0ac7\u0a9d\u0ab0 \u0ab5\u0aa1\u0ac7 \u0a89\u0ab2\u0acd\u0a95\u0abe\u0a93 \u0aa4\u0acb\u0aa1\u0ac0\u0aa8\u0ac7 \u0aaa\u0acb\u0a87\u0aa8\u0acd\u0a9f\u0acd\u0ab8 \u0a85\u0aa8\u0ac7 \u0ab8\u0acd\u0aaa\u0ac7\u0ab6\u0abf\u0aaf\u0ab2 \u0a95\u0acb\u0aae\u0acd\u0aac\u0acb \u0a97\u0ac1\u0aa3\u0abe\u0a82\u0a95 \u0aae\u0ac7\u0ab3\u0ab5\u0ab5\u0abe!",
+    "code_snippet": "",
+    "learned_at": 1790721524.8733609
+  },
+  "custom_mechanic_space_shooter": {
+    "name": "Space Laser Starfighter Engine",
+    "description": "Mastered space_shooter mechanics with custom HTML HUD and 60fps loop",
+    "code_snippet": "",
+    "learned_at": 1792092671.8845098
+  },
+  "custom_mechanic_maze_adventure": {
+    "name": "Dungeon Key & Portal Explorer",
+    "description": "Mastered maze_adventure mechanics with custom HTML HUD and 60fps loop",
+    "code_snippet": "",
+    "learned_at": 1790722125.6379902
+  },
+  "custom_mechanic_candy_catcher": {
+    "name": "High-Speed Basket Physics Catcher",
+    "description": "Mastered candy_catcher mechanics with custom HTML HUD and 60fps loop",
+    "code_snippet": "",
+    "learned_at": 1790722115.1446445
+  },
+  "custom_mechanic_cartoon_racer": {
+    "name": "Multi-Lane Nitro Turbo Racer",
+    "description": "Mastered cartoon_racer mechanics with custom HTML HUD and 60fps loop",
+    "code_snippet": "",
+    "learned_at": 1790722120.3724263
+  },
+  "custom_mechanic_bubble_pop": {
+    "name": "Dynamic Sonic Wave Bubble Physics",
+    "description": "Mastered bubble_pop mechanics with custom HTML HUD and 60fps loop",
+    "code_snippet": "",
+    "learned_at": 1790722320.5921848
+  }
+}

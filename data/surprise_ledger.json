@@ -1,0 +1,15 @@
+[
+  {
+    "surprise_title": "🌌 એન્ટિ-ગ્રાવિટી સ્પેસ પોર્ટલ! (Zero Gravity)",
+    "spoken_announcement": "દોસ્ત! મારી પાસે એક જબરદસ્ત સરપ્રાઇઝ આઈડિયા છે! શું હું ગેમમાં એન્ટિ-ગ્રાવિટી પોર્ટલ ઉમેરી દઉં, જેથી તમે સીધા આકાશની છત પર ચાલી શકો?",
+    "description": "કૂદવા પર ગ્રાવિટી ઉલટી થઈ જાય છે અને તમે આકાશમાં ઊંધા ચાલીને સોનેરી પિઝા અને તારા પકડો છો!",
+    "action_prompt": "ગેમમાં એન્ટિ-ગ્રાવિટી ફ્લિપ મિકેનિક ઉમેરો જેથી સ્પેસબાર દબાવતા પ્લેયર છત પર ચાલવા લાગે અને આકાશમાં સોનેરી પિઝા ભેગા કરે",
+    "badge": "🌌 Zero Gravity",
+    "evolution_skill": {
+      "id": "anti_gravity_portal",
+      "name": "Zero Gravity Ceiling Walk",
+      "description": "Allows inverting gravity so player walks on ceiling"
+    },
+    "timestamp": 1788701544.668502
+  }
+]

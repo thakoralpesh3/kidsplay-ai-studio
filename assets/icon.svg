@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7928CA"/>
+      <stop offset="50%" stop-color="#FF0080"/>
+      <stop offset="100%" stop-color="#FF4D4D"/>
+    </linearGradient>
+    <linearGradient id="sparkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE600"/>
+      <stop offset="100%" stop-color="#FF8C00"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Rounded App Tile -->
+  <rect x="24" y="24" width="464" height="464" rx="110" fill="url(#bgGrad)"/>
+  <rect x="34" y="34" width="444" height="444" rx="100" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.3"/>
+
+  <!-- Magic Sparkles & Stars -->
+  <polygon points="256,60 268,95 304,95 275,116 286,150 256,129 226,150 237,116 208,95 244,95" fill="url(#sparkGrad)" filter="url(#glow)"/>
+  <polygon points="120,130 126,150 146,150 130,162 136,182 120,170 104,182 110,162 94,150 114,150" fill="#FFE600"/>
+  <polygon points="392,130 398,150 418,150 402,162 408,182 392,170 376,182 382,162 366,150 386,150" fill="#FFE600"/>
+
+  <!-- Cute Mascot Body (Sparky the Game Dragon) -->
+  <ellipse cx="256" cy="290" rx="140" ry="120" fill="#FFFFFF"/>
+  
+  <!-- Horns / Ears -->
+  <path d="M 170 190 Q 150 130 190 150 Z" fill="#FFE600"/>
+  <path d="M 342 190 Q 362 130 322 150 Z" fill="#FFE600"/>
+
+  <!-- Big Sparkling Anime Eyes -->
+  <ellipse cx="205" cy="265" rx="26" ry="34" fill="#1A1A2E"/>
+  <ellipse cx="307" cy="265" rx="26" ry="34" fill="#1A1A2E"/>
+  
+  <!-- Eye Highlights -->
+  <circle cx="196" cy="254" r="10" fill="#FFFFFF"/>
+  <circle cx="214" cy="275" r="4" fill="#FFFFFF"/>
+  <circle cx="298" cy="254" r="10" fill="#FFFFFF"/>
+  <circle cx="316" cy="275" r="4" fill="#FFFFFF"/>
+
+  <!-- Rosy Cheeks -->
+  <ellipse cx="165" cy="290" rx="18" ry="10" fill="#FF85A2" opacity="0.85"/>
+  <ellipse cx="347" cy="290" rx="18" ry="10" fill="#FF85A2" opacity="0.85"/>
+
+  <!-- Cute Happy Smile -->
+  <path d="M 230 295 Q 256 325 282 295" fill="none" stroke="#1A1A2E" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- Gamepad Controller in Front -->
+  <g transform="translate(146, 320)">
+    <rect x="0" y="0" width="220" height="95" rx="35" fill="#181829" stroke="#00F0FF" stroke-width="4"/>
+    
+    <!-- D-Pad -->
+    <rect x="35" y="38" width="40" height="14" rx="4" fill="#4A4A68"/>
+    <rect x="48" y="25" width="14" height="40" rx="4" fill="#4A4A68"/>
+
+    <!-- Action Buttons (Colorful Candy) -->
+    <circle cx="155" cy="45" r="10" fill="#FF4D4D"/>
+    <circle cx="180" cy="45" r="10" fill="#00E676"/>
+    <circle cx="167.5" cy="26" r="10" fill="#FFEB3B"/>
+    <circle cx="167.5" cy="64" r="10" fill="#2979FF"/>
+    
+    <!-- Glow center -->
+    <circle cx="110" cy="45" r="7" fill="#00F0FF" filter="url(#glow)"/>
+  </g>
+
+  <!-- Voice Waves -->
+  <path d="M 80 270 Q 60 290 80 310" fill="none" stroke="#FFE600" stroke-width="6" stroke-linecap="round"/>
+  <path d="M 60 250 Q 30 290 60 330" fill="none" stroke="#FFE600" stroke-width="6" stroke-linecap="round"/>
+  <path d="M 432 270 Q 452 290 432 310" fill="none" stroke="#FFE600" stroke-width="6" stroke-linecap="round"/>
+  <path d="M 452 250 Q 482 290 452 330" fill="none" stroke="#FFE600" stroke-width="6" stroke-linecap="round"/>
+</svg>
