@@ -424,6 +424,26 @@ class KidsPlayWatchdog:
             if iteration % 6 == 0:
                 self.start_public_tunnel()
 
+            # 3. Autonomous Antigravity to GitHub Auto-Sync every 36s (3 iterations)
+            if iteration % 3 == 0:
+                self.auto_sync_github()
+
+    def auto_sync_github(self):
+        """Automatically commits and pushes any codebase changes made by Antigravity or user."""
+        try:
+            from scripts.github_sync import get_git_status, sync_to_github
+            status = get_git_status()
+            if not status.get("clean", True):
+                total = status.get("total_changes", 0)
+                logger.info("🔄 Auto-Sync: Detected %d modified/new file(s) by Antigravity. Automatically syncing to GitHub...", total)
+                res = sync_to_github(push=True)
+                if res.get("pushed"):
+                    logger.info("🎉 Auto-Sync: Successfully pushed Antigravity changes to GitHub! (%s)", res.get("commit"))
+                elif res.get("status") == "COMMITTED_LOCAL":
+                    logger.info("✅ Auto-Sync: Committed locally.")
+        except Exception as e:
+            logger.debug("Auto-Sync check error: %s", e)
+
     def stop(self, signum=None, frame=None):
         """Gracefully terminate child processes."""
         self.running = False

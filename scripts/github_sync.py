@@ -242,7 +242,25 @@ def sync_to_github(
             logger.error(f"Push failed: {push_err or push_out}")
             return {"status": "PUSH_FAILED", "commit": commit_msg, "pushed": False, "error": push_err or push_out}
 
-    return {"status": "COMMITTED_LOCAL", "commit": commit_msg, "pushed": False}
+def watch_and_sync(interval_seconds: int = 30, branch: str = "main", remote: str = "origin"):
+    """
+    Continuous background watcher loop that automatically detects any modifications
+    made by Antigravity or the user, and immediately commits and pushes them to GitHub.
+    """
+    import time
+    logger.info(f"👀 Autonomous GitHub Sync Watcher active (polling every {interval_seconds}s)...")
+    while True:
+        try:
+            status = get_git_status()
+            if not status.get("clean", True):
+                total = status.get("total_changes", 0)
+                logger.info(f"🔄 Auto-Sync: Detected {total} changed file(s). Automatically syncing to GitHub...")
+                res = sync_to_github(remote=remote, branch=branch, push=True)
+                if res.get("pushed"):
+                    logger.info(f"🎉 Auto-Sync: Successfully pushed changes to GitHub! ({res.get('commit')})")
+        except Exception as e:
+            logger.debug(f"Auto-Sync watcher check error: {e}")
+        time.sleep(interval_seconds)
 
 
 if __name__ == "__main__":
@@ -250,11 +268,15 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--message", help="Custom commit message", default=None)
     parser.add_argument("--no-push", action="store_true", help="Commit locally without pushing")
     parser.add_argument("--status", action="store_true", help="Print current git status")
+    parser.add_argument("--watch", "--daemon", dest="watch", action="store_true", help="Run continuous background auto-sync watcher")
+    parser.add_argument("--interval", type=int, default=30, help="Watcher interval in seconds (default: 30)")
     args = parser.parse_args()
 
     if args.status:
         st = get_git_status()
         print(f"Git Status: {st}")
+    elif args.watch:
+        watch_and_sync(interval_seconds=args.interval)
     else:
         res = sync_to_github(message=args.message, push=not args.no_push)
         print(f"Result: {res}")
