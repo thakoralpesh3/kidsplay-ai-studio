@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import time
 import logging
 from typing import Dict, Any, Optional, List
 from google import genai
@@ -13,6 +14,20 @@ class GeminiAgent:
         self.api_key = api_key
         self.model = model
         self.client = genai.Client(api_key=self.api_key)
+        self._circuit_breaker_until = 0.0
+
+    def is_circuit_open(self) -> bool:
+        """Returns True if the circuit breaker is open (short-circuiting network calls to avoid latency)."""
+        return time.time() < self._circuit_breaker_until
+
+    def trip_circuit_breaker(self, duration: float = 300.0):
+        """Trips the circuit breaker when quota 429 or network errors occur."""
+        self._circuit_breaker_until = time.time() + duration
+        logger.warning(f"⚡ Gemini Circuit Breaker TRIPPED for {int(duration)}s. Instant Local Synthesizer Active!")
+
+    def reset_circuit_breaker(self):
+        """Resets the circuit breaker when calls succeed."""
+        self._circuit_breaker_until = 0.0
 
     def _extract_json(self, text: str) -> Dict[str, Any]:
         """Safely extract JSON object from markdown or raw text."""
@@ -90,6 +105,23 @@ Guidelines:
         Answers child questions, proactively asks playful questions to brainstorm game ideas,
         or creates/modifies games when the child decides.
         """
+        fallback_resp = {
+            "action": "CONVERSE",
+            "spoken_response": "નમસ્તે દોસ્ત! તમારે કેવી ગેમ બનાવવી છે? મને કહો!",
+            "question_for_kid": "તમારે યુનિકોર્ન વાળી રમત બનાવવી છે કે સ્પેસ રોકેટ વાળી?",
+            "suggested_options": ["🦄 યુનિકોર્ન ડોનટ્સ ગેમ", "🚀 સ્પેસ રોકેટ ગેમ", "🏎️ ટર્બો કાર રેસિંગ"],
+            "game_prompt_if_ready": None
+        } if language.startswith("gu") else {
+            "action": "CONVERSE",
+            "spoken_response": "Hi friend! What kind of game shall we build today? Tell me!",
+            "question_for_kid": "Do you want to make a unicorn quest, a space rocket, or a car race?",
+            "suggested_options": ["🦄 Unicorn Adventure", "🚀 Space Rocket Titan", "🏎️ Turbo Highway Racer"],
+            "game_prompt_if_ready": None
+        }
+
+        if self.is_circuit_open():
+            return fallback_resp
+
         system_instruction = f"""
 You are "Sparky", the friendly AI Dragon Mascot and Game Studio Copilot for kids!
 Your personality is joyful, warm, super encouraging, funny, and deeply engaging.
@@ -119,20 +151,21 @@ Response JSON Schema:
             )
             return self._extract_json(interaction.output_text or "")
         except Exception as e:
+            err_str = str(e)
+            if any(k in err_str for k in ["503", "429", "ResourceExhausted", "Unavailable", "quota"]):
+                self.trip_circuit_breaker(300.0)
             logger.warning(f"Interactive copilot fallback: {e}")
-            return {
-                "action": "CONVERSE",
-                "spoken_response": "નમસ્તે દોસ્ત! તમારે કેવી ગેમ બનાવવી છે? મને કહો!",
-                "question_for_kid": "તમારે યુનિકોર્ન વાળી રમત બનાવવી છે કે સ્પેસ રોકેટ વાળી?",
-                "suggested_options": ["🦄 યુનિકોર્ન ડોનટ્સ ગેમ", "🚀 સ્પેસ રોકેટ ગેમ", "🏎️ ટર્બો કાર રેસિંગ"],
-                "game_prompt_if_ready": None
-            }
+            return fallback_resp
 
     def generate_game(self, prompt: str, language: str = "gu-IN", skills_summary: str = "") -> Dict[str, Any]:
         """
         Generates a full kid-friendly 2D HTML5 canvas game based on HTML, CSS, and JavaScript.
         """
         from server.game_synthesizer import synthesize_game_for_prompt
+
+        if self.is_circuit_open():
+            logger.info("Circuit breaker active: fast local synthesis.")
+            return synthesize_game_for_prompt(prompt, language, skills_summary)
 
         system_instruction = """
 You are "Sparky", powered by Gemini 4 Argon — the world's most joyful, creative, and advanced AI Game Studio Frontier Engine for kids and families!
@@ -205,7 +238,8 @@ ALWAYS respond ONLY with valid JSON in this exact structure:
             return self._extract_json(raw_text)
         except Exception as e:
             err_str = str(e)
-            if any(k in err_str for k in ["503", "429", "ResourceExhausted", "Unavailable", "quota"]):
+            if any(k in err_str for k in ["503", "429", "ResourceExhausted", "Unavailable", "quota", "not found"]):
+                self.trip_circuit_breaker(300.0)
                 logger.warning(f"Gemini API rate limit or service unavailable ({e}). Seamlessly activating Multi-Genre HTML/CSS/JS Synthesizer!")
                 return synthesize_game_for_prompt(prompt, language, skills_summary)
             try:
@@ -215,6 +249,7 @@ ALWAYS respond ONLY with valid JSON in this exact structure:
                 )
                 return self._extract_json(response.text)
             except Exception as e2:
+                self.trip_circuit_breaker(300.0)
                 logger.warning(f"Gemini fallback model error ({e2}). Activating Multi-Genre Synthesizer!")
                 return synthesize_game_for_prompt(prompt, language, skills_summary)
 
