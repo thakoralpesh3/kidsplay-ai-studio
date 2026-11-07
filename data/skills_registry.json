@@ -45,7 +45,7 @@
     "name": "Zero Gravity Ceiling Walk",
     "description": "Allows inverting gravity so player walks on ceiling",
     "code_snippet": "",
-    "learned_at": 1788701544.291475
+    "learned_at": 1794075586.4067767
   },
   "laser_asteroid_blaster": {
     "name": "\u0ab2\u0ac7\u0a9d\u0ab0 \u0a8f\u0ab8\u0acd\u0a9f\u0ab0\u0acb\u0a87\u0aa1 \u0aac\u0acd\u0ab2\u0abe\u0ab8\u0acd\u0a9f\u0ab0 (Laser Asteroid Blaster)",
@@ -57,7 +57,7 @@
     "name": "Space Laser Starfighter Engine",
     "description": "Mastered space_shooter mechanics with custom HTML HUD and 60fps loop",
     "code_snippet": "",
-    "learned_at": 1792092671.8845098
+    "learned_at": 1794075413.1813772
   },
   "custom_mechanic_maze_adventure": {
     "name": "Dungeon Key & Portal Explorer",
@@ -82,5 +82,11 @@
     "description": "Mastered bubble_pop mechanics with custom HTML HUD and 60fps loop",
     "code_snippet": "",
     "learned_at": 1790722320.5921848
+  },
+  "test_id": {
+    "name": "test_name",
+    "description": "test_desc",
+    "code_snippet": "",
+    "learned_at": 1794075652.9642596
   }
 }
