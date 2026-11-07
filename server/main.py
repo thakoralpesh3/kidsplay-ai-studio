@@ -231,16 +231,19 @@ async def chat_with_copilot(req: ChatRequest, request: Request):
         }
 
     try:
-        res = await asyncio.to_thread(
-            agent.interactive_copilot_chat,
-            clean_prompt,
-            req.conversation_history or [],
-            req.language or DEFAULT_LANG,
-            req.current_game
+        res = await asyncio.wait_for(
+            asyncio.to_thread(
+                agent.interactive_copilot_chat,
+                clean_prompt,
+                req.conversation_history or [],
+                req.language or DEFAULT_LANG,
+                req.current_game
+            ),
+            timeout=2.0
         )
         return res
-    except Exception as e:
-        logger.error(f"Chat copilot error: {e}")
+    except (asyncio.TimeoutError, Exception) as e:
+        logger.warning(f"Chat copilot fast fallback: {e}")
         return {
             "action": "CONVERSE",
             "spoken_response": "નમસ્તે દોસ્ત! ચાલો એક મજેદાર ગેમ બનાવીએ! 🎮✨",
@@ -287,7 +290,7 @@ async def create_game(req: CreateGameRequest, request: Request):
         try:
             result = await asyncio.wait_for(
                 asyncio.to_thread(agent.generate_game, clean_prompt, req.language, skills_summary),
-                timeout=5.0
+                timeout=2.0
             )
         except (asyncio.TimeoutError, Exception) as e:
             logger.warning(f"Gemini generation call bypassed/failed ({e}). Falling back to Instant Synthesizer!")
@@ -335,7 +338,7 @@ async def modify_game(req: ModifyGameRequest, request: Request):
         try:
             result = await asyncio.wait_for(
                 asyncio.to_thread(agent.modify_game, req.current_game, clean_prompt, req.language, skills_summary),
-                timeout=5.0
+                timeout=2.0
             )
         except (asyncio.TimeoutError, Exception) as e:
             logger.warning(f"Gemini modification call bypassed/failed ({e}). Falling back to Instant Synthesizer!")
@@ -399,11 +402,14 @@ async def get_surprise_idea(req: SurpriseRequest):
     """
     try:
         skills_summary = evolution.get_skills_summary()
-        idea = await asyncio.to_thread(
-            agent.generate_surprise_idea,
-            req.current_game,
-            req.language or DEFAULT_LANG,
-            skills_summary
+        idea = await asyncio.wait_for(
+            asyncio.to_thread(
+                agent.generate_surprise_idea,
+                req.current_game,
+                req.language or DEFAULT_LANG,
+                skills_summary
+            ),
+            timeout=2.0
         )
         # Register new evolutionary skill if provided
         if isinstance(idea, dict) and "evolution_skill" in idea and idea["evolution_skill"]:

@@ -19,9 +19,12 @@ class KidsPlayStudioApp {
     this.isGenerating = false;
     this.activeSurprise = null;
     this.conversationHistory = [];
+    this.difficulty = 'normal'; // 'easy' | 'normal' | 'superstar'
+    this.favorites = this._loadFavorites();
 
     this._initUI();
     this._bindEvents();
+    this._updateFavCount();
     this._loadStarterGame();
     this.refreshMemoryStats();
     this._startProactiveSurpriseTimer();
@@ -48,6 +51,14 @@ class KidsPlayStudioApp {
       genTitle: document.getElementById('gen-status-title'),
       genDesc: document.getElementById('gen-status-desc'),
       btnRestart: document.getElementById('btn-restart-game'),
+      btnDifficulty: document.getElementById('btn-difficulty-toggle'),
+      btnSaveFavorite: document.getElementById('btn-save-favorite'),
+      btnMyGames: document.getElementById('btn-my-games'),
+      btnExportGame: document.getElementById('btn-export-game'),
+      favCount: document.getElementById('fav-count'),
+      favoritesModal: document.getElementById('favorites-modal'),
+      btnCloseFavModal: document.getElementById('btn-close-fav-modal'),
+      favListContainer: document.getElementById('favorites-list-container'),
       btnMute: document.getElementById('btn-mute-audio'),
       btnFullscreen: document.getElementById('btn-fullscreen'),
       canvasWrapper: document.getElementById('canvas-wrapper'),
@@ -260,6 +271,44 @@ class KidsPlayStudioApp {
       this.engine.restart();
     });
 
+    if (this.elements.btnDifficulty) {
+      this.elements.btnDifficulty.addEventListener('click', () => {
+        this.toggleDifficulty();
+      });
+    }
+
+    if (this.elements.btnSaveFavorite) {
+      this.elements.btnSaveFavorite.addEventListener('click', () => {
+        this.saveCurrentToFavorites();
+      });
+    }
+
+    if (this.elements.btnMyGames) {
+      this.elements.btnMyGames.addEventListener('click', () => {
+        this.openFavoritesModal();
+      });
+    }
+
+    if (this.elements.btnExportGame) {
+      this.elements.btnExportGame.addEventListener('click', () => {
+        this.exportCurrentGameAsHtml();
+      });
+    }
+
+    if (this.elements.btnCloseFavModal) {
+      this.elements.btnCloseFavModal.addEventListener('click', () => {
+        if (this.elements.favoritesModal) this.elements.favoritesModal.classList.add('hidden');
+      });
+    }
+
+    if (this.elements.favoritesModal) {
+      this.elements.favoritesModal.addEventListener('click', (e) => {
+        if (e.target === this.elements.favoritesModal) {
+          this.elements.favoritesModal.classList.add('hidden');
+        }
+      });
+    }
+
     this.elements.btnMute.addEventListener('click', () => {
       this.engine.audio.muted = !this.engine.audio.muted;
       this.elements.btnMute.textContent = this.engine.audio.muted ? '🔇 Muted' : '🔊 Audio';
@@ -346,42 +395,65 @@ class KidsPlayStudioApp {
       : "🎁 Sparky is brewing a magical surprise idea...";
     this.updateAssistantSpeech(waitingText);
     
+    if (this._isStaticPages() && window.ClientGameSynthesizer) {
+      const surprise = window.ClientGameSynthesizer.getFallbackSurpriseIdea(this.currentGameData, lang);
+      this._displaySurprise(surprise, lang);
+      return;
+    }
+
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
       const resp = await fetch('/api/evolution/surprise', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           current_game: this.currentGameData,
           language: lang
         })
       });
+      clearTimeout(timeoutId);
 
       if (resp.ok) {
         const data = await resp.json();
         const surprise = data.surprise;
         if (surprise) {
-          this.activeSurprise = surprise;
-          if (this.elements.surpriseTitle) {
-            this.elements.surpriseTitle.textContent = surprise.surprise_title || "સ્પાર્કીનો સરપ્રાઇઝ આઈડિયા! ✨";
-          }
-          if (this.elements.surpriseDesc) {
-            this.elements.surpriseDesc.textContent = surprise.description || surprise.spoken_announcement;
-          }
-          if (this.elements.surpriseBadge && surprise.badge) {
-            this.elements.surpriseBadge.textContent = surprise.badge;
-          }
-          if (this.elements.surpriseBanner) {
-            this.elements.surpriseBanner.classList.remove('hidden');
-          }
-
-          const spoken = surprise.spoken_announcement || surprise.description;
-          this.updateAssistantSpeech(spoken);
-          this.voice.speak(spoken, lang);
-          this.engine.audio.playSound('powerup');
+          this._displaySurprise(surprise, lang);
+          return;
         }
       }
     } catch (err) {
-      console.warn("Failed to get surprise idea:", err);
+      console.warn("Surprise request timed out or unavailable, using client synthesizer:", err);
+    }
+
+    if (window.ClientGameSynthesizer) {
+      const surprise = window.ClientGameSynthesizer.getFallbackSurpriseIdea(this.currentGameData, lang);
+      this._displaySurprise(surprise, lang);
+    }
+  }
+
+  _displaySurprise(surprise, lang) {
+    if (!surprise) return;
+    this.activeSurprise = surprise;
+    if (this.elements.surpriseTitle) {
+      this.elements.surpriseTitle.textContent = surprise.surprise_title || "સ્પાર્કીનો સરપ્રાઇઝ આઈડિયા! ✨";
+    }
+    if (this.elements.surpriseDesc) {
+      this.elements.surpriseDesc.textContent = surprise.description || surprise.spoken_announcement;
+    }
+    if (this.elements.surpriseBadge && surprise.badge) {
+      this.elements.surpriseBadge.textContent = surprise.badge;
+    }
+    if (this.elements.surpriseBanner) {
+      this.elements.surpriseBanner.classList.remove('hidden');
+    }
+
+    const spoken = surprise.spoken_announcement || surprise.description;
+    this.updateAssistantSpeech(spoken);
+    this.voice.speak(spoken, lang);
+    if (this.engine && this.engine.audio) {
+      this.engine.audio.playSound('powerup');
     }
   }
 

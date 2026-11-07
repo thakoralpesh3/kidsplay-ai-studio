@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🎮 KidsPlay AI Studio - Interactive Voice Assistant & Kids Game Maker</title>
-  <link rel="icon" type="image/svg+xml" href="/assets/icon.svg">
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@700;900&family=Noto+Sans+Gujarati:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <!-- Network Resilience Notification Banner -->
@@ -28,7 +28,7 @@
     <header class="app-header">
       <div class="brand-group">
         <div class="app-logo">
-          <img src="/assets/icon.svg" alt="KidsPlay Mascot">
+          <img src="assets/icon.svg" alt="KidsPlay Mascot">
         </div>
         <div class="title-group">
           <h1>KidsPlay AI Studio (કિડ્સ ગેમ સ્ટુડિયો)</h1>
@@ -209,6 +209,10 @@
 
             <div class="game-actions">
               <button id="btn-restart-game" class="btn-game-tool" title="ફરી શરૂ કરો">🔄 Restart</button>
+              <button id="btn-difficulty-toggle" class="btn-game-tool" title="મુશ્કેલી સ્તર બદલો (Difficulty: Easy / Normal / Super Star)">⭐ Normal</button>
+              <button id="btn-save-favorite" class="btn-game-tool" title="મનપસંદ યાદીમાં સાચવો (Save Game)">❤️ સાચવો</button>
+              <button id="btn-my-games" class="btn-game-tool" title="મારી સાચવેલી રમતો (Saved Games)">📂 સંગ્રહ (<span id="fav-count">0</span>)</button>
+              <button id="btn-export-game" class="btn-game-tool" title="ઓફલાઇન રમત ડાઉનલોડ કરો (.html)">💾 ડાઉનલોડ</button>
               <button id="btn-mute-audio" class="btn-game-tool" title="અવાજ ચાલુ/બંધ">🔊 Audio</button>
               <button id="btn-fullscreen" class="btn-game-tool" title="મોટી સ્ક્રીન">⛶ Fullscreen</button>
             </div>
@@ -371,7 +375,7 @@
               <div class="agent-tag" style="background:#ff007a;">🎮 Agent 2: KidsPlay Studio</div>
               <h3 style="margin:8px 0;font-size:16px;">KidsPlay AI Studio & Sparky</h3>
               <div class="qr-container" style="background:#fff;padding:8px;border-radius:12px;display:inline-block;margin:6px 0;">
-                <img id="kidsplay-qr-img" src="/kidsplay_mobile_qr.png" alt="KidsPlay QR" style="width:140px;height:140px;display:block;" onerror="this.style.display='none'">
+                <img id="kidsplay-qr-img" src="kidsplay_mobile_qr.png" alt="KidsPlay QR" style="width:140px;height:140px;display:block;" onerror="this.style.display='none'">
               </div>
               <p class="mobile-url" id="kidsplay-mobile-url-text" style="font-size:11px;color:#00f0ff;word-break:break-all;margin-top:6px;">તપાસી રહ્યું છે...</p>
               <a id="btn-open-kidsplay-mobile" href="#" target="_blank" class="btn-primary" style="margin-top:10px;text-decoration:none;display:inline-block;padding:8px 16px;font-size:12px;">🚀 મોબાઈલમાં ખોલો</a>
@@ -387,7 +391,23 @@
           </div>
 
           <div style="text-align:center;margin-top:16px;">
-            <a href="/mobile-hub" target="_blank" class="choice-chip" style="display:inline-block;font-size:13px;padding:8px 16px;">🌐 બંને એજન્ટ્સનું સંયુક્ત મોબાઈલ પોર્ટલ ખોલો (Dual Agent Hub)</a>
+            <a href="mobile-hub" target="_blank" class="choice-chip" style="display:inline-block;font-size:13px;padding:8px 16px;">🌐 બંને એજન્ટ્સનું સંયુક્ત મોબાઈલ પોર્ટલ ખોલો (Dual Agent Hub)</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Favorites & Offline Games Modal -->
+    <div class="modal-backdrop hidden" id="favorites-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>⭐ મારી સાચવેલી રમતો (My Saved Games)</h2>
+          <button class="btn-close-modal" id="btn-close-fav-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-intro">તમારી મનપસંદ રમતો અહીં સેવ થયેલી છે. ગમે ત્યારે એક ક્લિકથી ફરી રમો અથવા ડાઉનલોડ કરો:</p>
+          <div id="favorites-list-container" class="favorites-grid" style="display:flex;flex-direction:column;gap:12px;max-height:360px;overflow-y:auto;padding:8px;">
+            <!-- Dynamically populated -->
           </div>
         </div>
       </div>
@@ -396,10 +416,11 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/js/game_engine.js"></script>
-  <script src="/js/voice_assistant.js"></script>
-  <script src="/js/self_healing.js"></script>
-  <script src="/js/resilience.js"></script>
-  <script src="/js/app.js"></script>
+  <script src="js/game_synthesizer.js"></script>
+  <script src="js/game_engine.js"></script>
+  <script src="js/voice_assistant.js"></script>
+  <script src="js/self_healing.js"></script>
+  <script src="js/resilience.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

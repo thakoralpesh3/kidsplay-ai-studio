@@ -264,6 +264,11 @@ ALWAYS respond ONLY with valid JSON in this exact structure:
         current_theme = json.dumps(current_game.get('theme', {}))
         current_code = current_game.get('game_code', '')
 
+        if self.is_circuit_open():
+            base_synth = synthesize_game_for_prompt(f"{current_title} {prompt}", language, skills_summary)
+            base_synth["spoken_response"] = "મેં તમારી ગેમમાં ફેરફાર કરી દીધા છે! નવી શક્તિઓ સાથે રમવાની મજા માણો! ✨" if language.startswith("gu") else "I updated your game with awesome new tweaks! Enjoy playing! ✨"
+            return base_synth
+
         system_instruction = f"""
 You are "Sparky", the AI Game Studio Assistant.
 The kid is playing an HTML/CSS/JS game and just asked for a change or live modification! (e.g. "make my character jump higher", "add turbo rocket boost", "turn background into space", "add golden cupcakes").
@@ -306,7 +311,8 @@ ALWAYS return ONLY a JSON response:
             return self._extract_json(raw_text)
         except Exception as e:
             err_str = str(e)
-            if any(k in err_str for k in ["503", "429", "ResourceExhausted", "Unavailable", "quota"]):
+            if any(k in err_str for k in ["503", "429", "ResourceExhausted", "Unavailable", "quota", "not found"]):
+                self.trip_circuit_breaker(300.0)
                 logger.warning(f"Gemini API unavailable or rate limit ({e}). Fast fallback to Synthesizer!")
                 base_synth = synthesize_game_for_prompt(f"{current_title} {prompt}", language, skills_summary)
                 base_synth["spoken_response"] = "મેં તમારી ગેમમાં ફેરફાર કરી દીધા છે! નવી શક્તિઓ સાથે રમવાની મજા માણો! ✨" if language.startswith("gu") else "I updated your game with awesome new tweaks! Enjoy playing! ✨"
@@ -318,6 +324,7 @@ ALWAYS return ONLY a JSON response:
                 )
                 return self._extract_json(response.text)
             except Exception as e2:
+                self.trip_circuit_breaker(300.0)
                 logger.warning(f"Modification rate limit fallback: {e2}. Synthesizing adapted game.")
                 base_synth = synthesize_game_for_prompt(f"{current_title} {prompt}", language, skills_summary)
                 base_synth["spoken_response"] = "મેં તમારી ગેમમાં ફેરફાર કરી દીધા છે! નવી શક્તિઓ સાથે રમવાની મજા માણો! ✨" if language.startswith("gu") else "I updated your game with awesome new tweaks! Enjoy playing! ✨"
@@ -360,6 +367,33 @@ ALWAYS return JSON:
         Autonomous creative surprise generator:
         Invents a mind-blowing, unexpected, super fun game idea or wild mechanic!
         """
+        fallback_surprise = {
+            "surprise_title": "🌌 એન્ટિ-ગ્રાવિટી સ્પેસ પોર્ટલ! (Zero Gravity)",
+            "spoken_announcement": "દોસ્ત! મારી પાસે એક જબરદસ્ત સરપ્રાઇઝ આઈડિયા છે! શું હું ગેમમાં એન્ટિ-ગ્રાવિટી પોર્ટલ ઉમેરી દઉં, જેથી તમે સીધા આકાશની છત પર ચાલી શકો?",
+            "description": "કૂદવા પર ગ્રાવિટી ઉલટી થઈ જાય છે અને તમે આકાશમાં ઊંધા ચાલીને સોનેરી પિઝા અને તારા પકડો છો!",
+            "action_prompt": "ગેમમાં એન્ટિ-ગ્રાવિટી ફ્લિપ મિકેનિક ઉમેરો જેથી સ્પેસબાર દબાવતા પ્લેયર છત પર ચાલવા લાગે અને આકાશમાં સોનેરી પિઝા ભેગા કરે",
+            "badge": "🌌 Zero Gravity",
+            "evolution_skill": {
+                "id": "anti_gravity_portal",
+                "name": "Zero Gravity Ceiling Walk",
+                "description": "Allows inverting gravity so player walks on ceiling"
+            }
+        } if language.startswith("gu") else {
+            "surprise_title": "🌌 Anti-Gravity Cosmic Portal!",
+            "spoken_announcement": "Hey friend! I have a mind-blowing surprise idea! What if we flip gravity upside down so you can walk on the sky ceiling?",
+            "description": "Gravity inverts! Walk on the ceiling and catch flying space pizzas and neon stars!",
+            "action_prompt": "Add an anti-gravity inversion mechanic where tapping jump flips the player onto the sky ceiling to collect flying cosmic pizzas",
+            "badge": "🌌 Zero Gravity",
+            "evolution_skill": {
+                "id": "anti_gravity_portal",
+                "name": "Zero Gravity Ceiling Walk",
+                "description": "Allows inverting gravity so player walks on ceiling"
+            }
+        }
+
+        if self.is_circuit_open():
+            return fallback_surprise
+
         current_title = current_game.get('title', 'Kids Game') if current_game else "New Game"
         current_genre = current_game.get('genre', 'arcade') if current_game else "adventure"
 
@@ -397,7 +431,11 @@ ALWAYS return JSON:
             )
             return self._extract_json(interaction.output_text or "")
         except Exception as e:
-            logger.warning(f"Surprise generation with primary model error: {e}")
+            err_str = str(e)
+            if any(k in err_str for k in ["503", "429", "ResourceExhausted", "Unavailable", "quota", "not found"]):
+                self.trip_circuit_breaker(300.0)
+                logger.warning(f"Surprise generation quota or service unavailable ({e}). Providing synthesized surprise.")
+                return fallback_surprise
             try:
                 response = self.client.models.generate_content(
                     model="gemini-3.8-flash",
@@ -405,31 +443,7 @@ ALWAYS return JSON:
                 )
                 return self._extract_json(response.text)
             except Exception as e2:
+                self.trip_circuit_breaker(300.0)
                 logger.warning(f"Fallback surprise generation quota/network error: {e2}. Providing synthesized surprise.")
-                if language.startswith("gu"):
-                    return {
-                        "surprise_title": "🌌 એન્ટિ-ગ્રાવિટી સ્પેસ પોર્ટલ! (Zero Gravity)",
-                        "spoken_announcement": "દોસ્ત! મારી પાસે એક જબરદસ્ત સરપ્રાઇઝ આઈડિયા છે! શું હું ગેમમાં એન્ટિ-ગ્રાવિટી પોર્ટલ ઉમેરી દઉં, જેથી તમે સીધા આકાશની છત પર ચાલી શકો?",
-                        "description": "કૂદવા પર ગ્રાવિટી ઉલટી થઈ જાય છે અને તમે આકાશમાં ઊંધા ચાલીને સોનેરી પિઝા અને તારા પકડો છો!",
-                        "action_prompt": "ગેમમાં એન્ટિ-ગ્રાવિટી ફ્લિપ મિકેનિક ઉમેરો જેથી સ્પેસબાર દબાવતા પ્લેયર છત પર ચાલવા લાગે અને આકાશમાં સોનેરી પિઝા ભેગા કરે",
-                        "badge": "🌌 Zero Gravity",
-                        "evolution_skill": {
-                            "id": "anti_gravity_portal",
-                            "name": "Zero Gravity Ceiling Walk",
-                            "description": "Allows inverting gravity so player walks on ceiling"
-                        }
-                    }
-                else:
-                    return {
-                        "surprise_title": "🌌 Anti-Gravity Cosmic Portal!",
-                        "spoken_announcement": "Hey friend! I have a mind-blowing surprise idea! What if we flip gravity upside down so you can walk on the sky ceiling?",
-                        "description": "Gravity inverts! Walk on the ceiling and catch flying space pizzas and neon stars!",
-                        "action_prompt": "Add an anti-gravity inversion mechanic where tapping jump flips the player onto the sky ceiling to collect flying cosmic pizzas",
-                        "badge": "🌌 Zero Gravity",
-                        "evolution_skill": {
-                            "id": "anti_gravity_portal",
-                            "name": "Zero Gravity Ceiling Walk",
-                            "description": "Allows inverting gravity so player walks on ceiling"
-                        }
-                    }
+                return fallback_surprise
 
