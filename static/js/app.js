@@ -518,12 +518,51 @@ class KidsPlayStudioApp {
 
     this.conversationHistory.push({ role: 'user', content: prompt });
 
+    // Static GitHub Pages or Direct Offline Mode
+    if (this._isStaticPages()) {
+      if (!forceType && this._isInteractiveChat(prompt)) {
+        const reply = lang === 'gu-IN' 
+          ? "નમસ્તે દોસ્ત! હું સ્પાર્કી છું! ચાલો એક મસ્ત ગેમ બનાવીએ!" 
+          : "Hi friend! I'm Sparky! Let's build an awesome game!";
+        const q = lang === 'gu-IN' ? "તમારે કઈ રમત બનાવવી છે?" : "What kind of game would you like?";
+        const opts = lang === 'gu-IN' 
+          ? ["🦄 યુનિકોર્ન ગેમ", "🚀 સ્પેસ રોકેટ", "🏎️ કાર રેસિંગ"]
+          : ["🦄 Unicorn Adventure", "🚀 Space Rocket Titan", "🏎️ Turbo Highway Racer"];
+        this.updateAssistantSpeech(`${reply} ${q}`);
+        this.voice.speak(`${reply} ${q}`, lang);
+        this.renderInteractiveOptions(opts);
+        return;
+      }
+
+      this.isGenerating = true;
+      const isModify = forceType === 'modify' || (this.currentGameData && this._isModificationIntent(prompt));
+      const overlayTitle = lang === 'gu-IN' 
+        ? (isModify ? "✨ સ્પાર્કી તમારી ગેમમાં ફેરફાર કરી રહ્યો છે..." : "🪄 સ્પાર્કી નવી જાદુઈ ગેમ બનાવી રહ્યો છે...")
+        : (isModify ? "✨ Sparky is Modifying Your Game..." : "🪄 Sparky is Weaving Game Magic...");
+      const overlayDesc = lang === 'gu-IN'
+        ? `"${prompt}" લાગુ થઈ રહ્યું છે!`
+        : `Applying "${prompt}"!`;
+      this.showGenerationOverlay(overlayTitle, overlayDesc);
+
+      setTimeout(() => {
+        if (window.ClientGameSynthesizer) {
+          const clientResult = window.ClientGameSynthesizer.synthesizeGame(prompt, lang);
+          this.applyGameResult(clientResult);
+        }
+        this.isGenerating = false;
+      }, 400);
+      return;
+    }
+
     // 1. Check if conversational copilot mode
     if (!forceType && this._isInteractiveChat(prompt)) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
         const chatResp = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
           body: JSON.stringify({
             message: prompt,
             language: lang,
@@ -531,6 +570,7 @@ class KidsPlayStudioApp {
             current_game: this.currentGameData
           })
         });
+        clearTimeout(timeoutId);
 
         if (chatResp.ok) {
           const chatData = await chatResp.json();
@@ -569,11 +609,16 @@ class KidsPlayStudioApp {
         ? { prompt, current_game: this.currentGameData, language: lang }
         : { prompt, language: lang };
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify(payload)
       });
+      clearTimeout(timeoutId);
 
       const data = await response.json();
 
@@ -600,7 +645,15 @@ class KidsPlayStudioApp {
       }
 
     } catch (err) {
-      console.error("Error creating/modifying game:", err);
+      console.warn("Backend fetch failed/timed out. Falling back to Client-Side Synthesizer:", err);
+      if (window.ClientGameSynthesizer) {
+        const clientResult = window.ClientGameSynthesizer.synthesizeGame(prompt, lang);
+        if (clientResult) {
+          this.resilience.clearSavedJob();
+          this.applyGameResult(clientResult);
+          return;
+        }
+      }
       this.hideGenerationOverlay();
       const errMsg = lang === 'gu-IN' ? "અરેરે! કંઈક ભૂલ થઈ, ચાલો ફરીથી બીજો આઈડિયા ટ્રાય કરીએ!" : "Oops! Let's try again with another prompt!";
       this.updateAssistantSpeech(errMsg);
@@ -688,6 +741,325 @@ class KidsPlayStudioApp {
     this.elements.genTitle.textContent = title;
     this.elements.genDesc.textContent = desc;
     this.elements.genOverlay.classList.remove('hidden');
+  }
+
+  _isStaticPages() {
+    return window.location.protocol === 'file:' || 
+           window.location.hostname.endsWith('github.io') || 
+           window.location.hostname.endsWith('pages.dev') ||
+           (window.location.hostname === 'localhost' && window.location.port !== '8899');
+  }
+
+  toggleDifficulty() {
+    const modes = ['normal', 'superstar', 'easy'];
+    const next = modes[(modes.indexOf(this.difficulty) + 1) % modes.length];
+    this.difficulty = next;
+    const labels = {
+      'easy': '🧸 Easy',
+      'normal': '⭐ Normal',
+      'superstar': '⚡ Super Star'
+    };
+    if (this.elements.btnDifficulty) {
+      this.elements.btnDifficulty.textContent = labels[next];
+    }
+    if (this.engine) {
+      this.engine.difficulty = next;
+      if (next === 'easy') {
+        this.engine.lives = 5;
+      } else if (next === 'superstar') {
+        this.engine.lives = 2;
+      } else {
+        this.engine.lives = 3;
+      }
+      if (this.engine.hudLives) this.engine.hudLives.textContent = this.engine.lives;
+    }
+    const msg = this.elements.langSelect.value === 'gu-IN'
+      ? `મુશ્કેલી સ્તર બદલાયું: ${labels[next]}`
+      : `Difficulty set to: ${labels[next]}`;
+    this.updateAssistantSpeech(msg);
+  }
+
+  _loadFavorites() {
+    try {
+      return JSON.parse(localStorage.getItem('kidsplay_favorites') || '[]');
+    } catch (e) {
+      return [];
+    }
+  }
+
+  saveCurrentToFavorites() {
+    if (!this.currentGameData) return;
+    const item = {
+      id: 'fav_' + Date.now(),
+      title: this.currentGameData.title || 'Kids Game',
+      genre: this.currentGameData.genre || 'arcade',
+      icon: (this.currentGameData.theme && this.currentGameData.theme.player_emoji) || '🎮',
+      savedAt: new Date().toLocaleDateString(),
+      gameData: this.currentGameData
+    };
+    this.favorites.unshift(item);
+    if (this.favorites.length > 20) this.favorites.pop();
+    try {
+      localStorage.setItem('kidsplay_favorites', JSON.stringify(this.favorites));
+    } catch (e) {}
+    this._updateFavCount();
+    const msg = this.elements.langSelect.value === 'gu-IN'
+      ? `❤️ "${item.title}" તમારી મનપસંદ યાદીમાં સાચવી લીધી છે!`
+      : `❤️ "${item.title}" saved to your favorites!`;
+    this.updateAssistantSpeech(msg);
+    if (this.engine && this.engine.audio) this.engine.audio.playSound('win');
+  }
+
+  _updateFavCount() {
+    if (this.elements.favCount) {
+      this.elements.favCount.textContent = this.favorites.length;
+    }
+  }
+
+  openFavoritesModal() {
+    if (!this.elements.favoritesModal || !this.elements.favListContainer) return;
+    if (!this.favorites.length) {
+      this.elements.favListContainer.innerHTML = `
+        <div style="text-align:center;padding:24px;color:#a0a6d0;">
+          <span style="font-size:36px;display:block;margin-bottom:8px;">🎈</span>
+          <p>હજી સુધી કોઈ રમત સાચવેલી નથી. નવી ગેમ બનાવીને "❤️ સાચવો" બટન દબાવો!</p>
+        </div>`;
+    } else {
+      this.elements.favListContainer.innerHTML = this.favorites.map((fav, idx) => `
+        <div class="fav-card" style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.06);padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:24px;">${fav.icon}</span>
+            <div>
+              <h4 style="margin:0;font-size:15px;color:#fff;">${fav.title}</h4>
+              <span style="font-size:11px;color:#8890ba;">${fav.genre.toUpperCase()} • ${fav.savedAt}</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="choice-chip btn-load-fav" data-idx="${idx}" style="padding:6px 12px;font-size:12px;">🎮 રમો</button>
+            <button class="choice-chip btn-export-fav" data-idx="${idx}" style="padding:6px 10px;font-size:12px;">💾</button>
+            <button class="btn-game-tool btn-del-fav" data-idx="${idx}" style="padding:6px 10px;font-size:12px;color:#ff5577;">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+
+      this.elements.favListContainer.querySelectorAll('.btn-load-fav').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.getAttribute('data-idx'), 10);
+          const fav = this.favorites[idx];
+          if (fav && fav.gameData) {
+            this.applyGameResult(fav.gameData);
+            this.elements.favoritesModal.classList.add('hidden');
+          }
+        });
+      });
+
+      this.elements.favListContainer.querySelectorAll('.btn-export-fav').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.getAttribute('data-idx'), 10);
+          const fav = this.favorites[idx];
+          if (fav && fav.gameData) {
+            this.exportCurrentGameAsHtml(fav.gameData);
+          }
+        });
+      });
+
+      this.elements.favListContainer.querySelectorAll('.btn-del-fav').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.getAttribute('data-idx'), 10);
+          this.favorites.splice(idx, 1);
+          localStorage.setItem('kidsplay_favorites', JSON.stringify(this.favorites));
+          this._updateFavCount();
+          this.openFavoritesModal();
+        });
+      });
+    }
+    this.elements.favoritesModal.classList.remove('hidden');
+  }
+
+  exportCurrentGameAsHtml(data = null) {
+    const game = data || this.currentGameData;
+    if (!game) return;
+    const title = game.title || 'KidsPlay Game';
+    const code = game.game_code || '';
+    const icon = (game.theme && game.theme.player_emoji) || '🎮';
+    const instructions = game.instructions || 'ખસવા માટે એરો કી અથવા ઓનસ્ક્રીન બટન વાપરો!';
+
+    const htmlContent = `<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>${title} - KidsPlay Offline Game</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0f1026; color: #fff; font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; touch-action: manipulation; }
+    header { padding: 10px; display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 800px; }
+    h1 { font-size: 18px; font-weight: bold; }
+    #stage { position: relative; width: 100%; max-width: 800px; aspect-ratio: 16/10; background: #161836; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    canvas { width: 100%; height: 100%; display: block; }
+    #hud { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; gap: 10px; pointer-events: none; }
+    .chip { background: rgba(0,0,0,0.6); padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 14px; }
+    #instructions { padding: 8px 12px; font-size: 12px; color: #a0a6d0; text-align: center; max-width: 800px; }
+    #touch-bar { display: flex; justify-content: space-between; width: 100%; max-width: 800px; padding: 10px; }
+    .touch-btn { background: #ff007a; border: none; color: #fff; padding: 12px 20px; font-size: 16px; font-weight: bold; border-radius: 12px; cursor: pointer; user-select: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>${icon} ${title}</h1>
+    <button class="touch-btn" onclick="location.reload()" style="background:#20244e;padding:6px 12px;font-size:12px;">🔄 ફરી શરૂ કરો</button>
+  </header>
+  <div id="stage">
+    <div id="hud">
+      <div class="chip">💖 <span id="lives">3</span></div>
+      <div class="chip">⭐ <span id="score">0</span></div>
+      <div class="chip">⚡ <span id="combo">x1</span></div>
+    </div>
+    <canvas id="c" width="800" height="500"></canvas>
+  </div>
+  <div id="instructions">💡 ${instructions}</div>
+  <div id="touch-bar">
+    <div style="display:flex;gap:8px;">
+      <button class="touch-btn" id="btn-left">◀</button>
+      <button class="touch-btn" id="btn-up">▲</button>
+      <button class="touch-btn" id="btn-down">▼</button>
+      <button class="touch-btn" id="btn-right">▶</button>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="touch-btn" id="btn-jump" style="background:#00f0ff;color:#000;">કૂદો 🦘</button>
+      <button class="touch-btn" id="btn-action" style="background:#ffe600;color:#000;">જાદુ ✨</button>
+    </div>
+  </div>
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const hudLives = document.getElementById('lives');
+    const hudScore = document.getElementById('score');
+    const hudCombo = document.getElementById('combo');
+    
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(freq, type, duration) {
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+      } catch(e) {}
+    }
+    const audio = {
+      playSound(name) {
+        if (name === 'jump') playBeep(320, 'sine', 0.15);
+        else if (name === 'coin') playBeep(880, 'triangle', 0.2);
+        else if (name === 'powerup') playBeep(580, 'triangle', 0.35);
+        else if (name === 'laser') playBeep(900, 'sawtooth', 0.1);
+        else if (name === 'hit') playBeep(120, 'square', 0.25);
+        else if (name === 'win') playBeep(523, 'triangle', 0.4);
+      }
+    };
+
+    const engine = {
+      width: 800, height: 500, score: 0, lives: 3, combo: 1, running: true, audio,
+      keys: { left: false, right: false, up: false, down: false, space: false, action: false },
+      pointer: { x: 400, y: 250, isDown: false },
+      particles: [],
+      updateHUD(data) {
+        if (data.score !== undefined) hudScore.textContent = data.score;
+        if (data.lives !== undefined) hudLives.textContent = data.lives;
+        if (data.combo !== undefined) hudCombo.textContent = 'x' + data.combo;
+      },
+      triggerScreenShake() {},
+      spawnParticles(x, y, colors, count) {
+        for (let i = 0; i < (count || 8); i++) {
+          engine.particles.push({
+            x, y,
+            vx: (Math.random() - 0.5) * 6,
+            vy: (Math.random() - 0.5) * 6,
+            color: colors[Math.floor(Math.random() * colors.length)] || '#fff',
+            alpha: 1.0,
+            life: 30
+          });
+        }
+      },
+      spawnScorePopup() {}
+    };
+
+    window.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft' || e.key === 'a') engine.keys.left = true;
+      if (e.key === 'ArrowRight' || e.key === 'd') engine.keys.right = true;
+      if (e.key === 'ArrowUp' || e.key === 'w') engine.keys.up = true;
+      if (e.key === 'ArrowDown' || e.key === 's') engine.keys.down = true;
+      if (e.key === ' ' || e.key === 'Spacebar') { engine.keys.space = true; engine.keys.action = true; }
+    });
+    window.addEventListener('keyup', e => {
+      if (e.key === 'ArrowLeft' || e.key === 'a') engine.keys.left = false;
+      if (e.key === 'ArrowRight' || e.key === 'd') engine.keys.right = false;
+      if (e.key === 'ArrowUp' || e.key === 'w') engine.keys.up = false;
+      if (e.key === 'ArrowDown' || e.key === 's') engine.keys.down = false;
+      if (e.key === ' ' || e.key === 'Spacebar') { engine.keys.space = false; engine.keys.action = false; }
+    });
+
+    function bindTouch(id, key) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('touchstart', e => { e.preventDefault(); engine.keys[key] = true; });
+      el.addEventListener('touchend', e => { e.preventDefault(); engine.keys[key] = false; });
+      el.addEventListener('mousedown', () => { engine.keys[key] = true; });
+      el.addEventListener('mouseup', () => { engine.keys[key] = false; });
+    }
+    bindTouch('btn-left', 'left');
+    bindTouch('btn-right', 'right');
+    bindTouch('btn-up', 'up');
+    bindTouch('btn-down', 'down');
+    bindTouch('btn-jump', 'space');
+    bindTouch('btn-action', 'action');
+
+    // Inject Game Code
+    ${code}
+
+    const gameInstance = window.createGameInstance();
+    if (gameInstance && gameInstance.init) gameInstance.init(engine);
+
+    let lastTime = performance.now();
+    function loop(now) {
+      const dt = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
+      ctx.clearRect(0, 0, 800, 500);
+      if (gameInstance && gameInstance.update) gameInstance.update(engine, dt);
+      if (gameInstance && gameInstance.draw) gameInstance.draw(engine, ctx);
+
+      for (let i = engine.particles.length - 1; i >= 0; i--) {
+        const p = engine.particles[i];
+        p.x += p.vx; p.y += p.vy; p.life--; p.alpha = Math.max(0, p.life / 30);
+        ctx.save(); ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+        if (p.life <= 0) engine.particles.splice(i, 1);
+      }
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>`;
+
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const cleanName = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'kidsplay-game';
+    a.download = `${cleanName}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    const msg = this.elements.langSelect.value === 'gu-IN'
+      ? `💾 "${title}" રમત સફળતાપૂર્વક ડાઉનલોડ થઈ ગઈ છે! કોઈપણ ઉપકરણમાં ઑફલાઇન રમો!`
+      : `💾 "${title}" exported! Play offline anywhere!`;
+    this.updateAssistantSpeech(msg);
   }
 
   hideGenerationOverlay() {
